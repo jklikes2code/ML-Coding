@@ -1,0 +1,433 @@
+# Day 2 - K-Nearest Neighbors starter file
+# You and your partner will fill in the TODOs as you work through
+# the site pages. Run this file often - test each piece before
+# building the next one!
+
+# if the nearest neighbors were "setosa", "virginica", and "virginica",
+# KNN would predict "virginica" because there are more votes.
+# if there was a tie, the one with closer distance should get picked.
+
+import math
+import random
+
+# --- The training data (from "3. The data") -------------------------
+# Each row is [petal_length, petal_width, species]
+training = [
+    [1.4, 0.2, "setosa"],
+    [1.3, 0.2, "setosa"],
+    [1.5, 0.2, "setosa"],
+    [1.7, 0.4, "setosa"],
+    [1.4, 0.3, "setosa"],
+    [4.5, 1.5, "versicolor"],
+    [4.7, 1.4, "versicolor"],
+    [4.0, 1.3, "versicolor"],
+    [4.6, 1.5, "versicolor"],
+    [3.9, 1.1, "versicolor"],
+    [6.0, 2.5, "virginica"],
+    [5.8, 1.8, "virginica"],
+    [6.3, 1.8, "virginica"],
+    [5.5, 2.1, "virginica"],
+    [5.1, 1.9, "virginica"]
+]
+
+# --- Task 4: write the distance function -----------------------------
+def distance(row_a, row_b):
+    """Measures how far apart two flowers are, using their features.
+
+    Args:
+        row_a: A flower row like [petal_length, petal_width, species].
+        row_b: Another row in the same format (a query with no species
+            label at the end works too - only index 0 and 1 are used).
+
+    Returns:
+        The straight-line distance between the two flowers' features,
+        as a float. Small means similar; 0.0 means identical features.
+    """
+    # TODO: straight-line distance over the two feature columns
+    # (index 0 and 1). Build a running total of squared differences,
+    # then square-root it OUTSIDE the loop. Tests are at the bottom.
+    total = 0
+    for i in range(2):
+        diff = row_a[i] - row_b[i]
+        total += diff**2
+    return math.sqrt(total)
+
+# print("two setosas:", distance(training[0], training[1]))
+# print("setosa vs virginica:", distance(training[0], training[10]))
+# print("a flower's distance to itself:", distance(training[5], training[5]))
+
+# --- Task 5: nearest neighbor (K = 1) ---------------------------------
+def nearest_label(training, query):
+    """Predicts a species by copying the single closest training flower.
+
+    Args:
+        training: The 2D list of flower rows [length, width, species].
+        query: The mystery flower's features, like [5.0, 1.7] (no label).
+
+    Returns:
+        The species string of the training flower closest to the query.
+    """
+    # TODO: the "best so far" pattern from section 5. Walk the training
+    # list and keep the closest flower seen so far (closer = SMALLER
+    # distance), then return its species.
+    best_label = training[0][2] #assume first flower is closest for now
+    best_dist = distance(training[0], query) # its distance to the mystery flower
+
+    for row in training:
+        d = distance(row, query)
+        if d < best_dist:
+            best_dist = d
+            best_label = row[2]
+            print("new closest:", row[2], "at distance", round(d, 3))
+    
+    return best_label
+
+#mystery = [3.0, 1.0] 
+#print("prediction:", nearest_label(training, mystery))
+
+# --- Task 6: K nearest neighbors with voting --------------------------
+def knn_predict(training, query, k):
+    """Predicts a species by letting the k closest flowers vote.
+
+    Args:
+        training: The 2D list of flower rows [length, width, species].
+        query: The mystery flower's features, like [5.0, 1.7] (no label).
+        k: How many nearest neighbors get a vote (1, 3, 5, ...).
+
+    Returns:
+        The species string that appears most among the k nearest
+        training flowers.
+    """
+    # TODO (section 6): build [distance, label] pairs for every flower,
+    # sort so the closest come first, take the first k labels, and
+    # return whichever label appears most (.count() helps). Tests below.
+    scored = []
+    for row in training:
+        d = distance(row, query)
+        scored.append([d, row[2]])   # a little pair: [distance, label]
+
+    scored.sort()   # rearranges the list so smallest distances come first
+
+    nearest_labels = []
+    for i in range(k):
+        nearest_labels.append(scored[i][1])   # [i] picks the pair, [1] picks its label
+
+    best_label = nearest_labels[0]
+    best_count = 0
+    for label in nearest_labels:
+        c = nearest_labels.count(label)   # how many neighbors have this label
+        if c > best_count:                # more votes than our best so far?
+            best_count = c
+            best_label = label
+    #print(nearest_labels)
+    return best_label
+
+#print("K=1:", knn_predict(training, [5.0, 1.7], 1))
+#print("K=3:", knn_predict(training, [5.0, 1.7], 3))
+#print("K=5:", knn_predict(training, [5.0, 1.7], 5))
+
+# --- Task 7: measure accuracy ------------------------------------------
+test = [
+    [1.5, 0.2, "setosa"],
+    [1.6, 0.3, "setosa"],
+    [4.2, 1.3, "versicolor"],
+    [4.4, 1.4, "versicolor"],
+    [6.1, 2.3, "virginica"],
+    [5.7, 2.0, "virginica"]
+]
+
+def accuracy(training, test, k):
+    """Scores the classifier on flowers it has never seen.
+
+    Args:
+        training: The 2D list the model learns from.
+        test: A separate 2D list of labeled rows to grade against.
+        k: How many neighbors vote in each prediction.
+
+    Returns:
+        The fraction of test flowers predicted correctly, between
+        0.0 (all wrong) and 1.0 (all right).
+    """
+    # TODO (section 7): count how many test rows knn_predict gets
+    # right, then return that as a fraction of all test rows.
+    correct = 0
+    for row in test:
+        guess = knn_predict(training, row, k)
+        #guess = knn_predict(training, row, k)
+        #print("true:", row[2], "| predicted:", guess, "| match:", guess == row[2])
+        if guess == row[2]:
+            correct = correct + 1
+    return correct/len(test)
+
+# print("accuracy at K=1:", accuracy(training, test, 1))
+# print("accuracy at K=3:", accuracy(training, test, 3))
+# print("accuracy at K=5:", accuracy(training, test, 5))
+# print("tested on its own training data:", accuracy(training, training, 1))
+
+# ======================================================================
+# TESTS - check your own work, no peeking at the solution needed.
+# Un-comment each block as you finish that function and re-run the file.
+# Each line prints PASS or FAIL. Aim for PASS all the way down.
+# ======================================================================
+
+def check(label, got, expected):
+    """Prints PASS/FAIL for one test (provided - you don't edit this)."""
+    mark = "PASS" if got == expected else "FAIL"
+    extra = "" if got == expected else "   (got " + repr(got) + ")"
+    print(mark, label, extra)
+
+
+def close_enough(got, target):
+    """True when a float answer is within a hair of the target."""
+    return got is not None and abs(got - target) < 0.01
+
+
+# After distance:  two setosas are close, setosa vs virginica is far.
+# check("distance: two setosas ~0.1",
+#       close_enough(distance(training[0], training[1]), 0.1), True)
+# check("distance: setosa vs virginica ~5.1",
+#      close_enough(distance(training[0], training[10]), 5.14), True)
+# check("distance: two versicolors ~0.7",
+#      close_enough(distance(training[6], training[7]), 0.7), True)
+
+
+#After nearest_label:  a clear setosa query should come back setosa.
+#check("nearest_label: obvious setosa", nearest_label(training, [1.5, 0.2]), "setosa")
+
+# After knn_predict:  the borderline flower [5.0, 1.7] can flip with k.
+# Don't hard-code an answer here - just watch it run, then discuss with
+# your partner WHY the vote can change as k grows.
+# print("k=1:", knn_predict(training, [5.0, 1.7], 1))
+# print("k=3:", knn_predict(training, [5.0, 1.7], 3))
+# print("k=5:", knn_predict(training, [5.0, 1.7], 5))
+
+# After accuracy:  the model should get most of the held-out test set.
+#check("accuracy: strong on test set (>= 0.8)",
+   #   accuracy(training, test, 3) >= 0.8, True)
+
+
+# --- Section 9: the real iris dataset --------------------------------
+# Download iris.csv into this same folder (sidebar button on the site).
+#
+# READING FROM A FILE is brand new today - Day 1 never covered it - so
+# this function is already written for you. Read it with your partner
+# before you run it. The whole trick is four tools:
+#   open(filename)  opens the file
+#   .readlines()    gives a list of its lines (as strings)
+#   .strip()        trims the invisible newline off the end of a line
+#   .split(",")     chops a line into a list at every comma
+# And one catch: everything from a file is TEXT, so float() must turn
+# "5.1" into the number 5.1 before you can do math with it.
+
+def load_iris(filename):
+    """Reads the iris CSV into a 2D list of flowers.
+
+    Args:
+        filename: Path to iris.csv (keep it next to this file).
+
+    Returns:
+        A list of rows, each
+        [sepal_length, sepal_width, petal_length, petal_width, species].
+    """
+    data = []
+
+    f = open(filename)              # open the file...
+    lines = f.readlines()           # ...grab every line...
+    f.close()                       # ...and close it politely
+
+    for line in lines[1:]:          # lines[0] is the header, skip it
+        parts = line.strip().split(",")
+
+        sepal_length = float(parts[0])   # file text -> numbers
+        sepal_width  = float(parts[1])
+        petal_length = float(parts[2])
+        petal_width  = float(parts[3])
+        species      = parts[4]
+
+        data.append([sepal_length, sepal_width, petal_length, petal_width, species])
+
+    print("loaded", len(data), "flowers")
+    return data
+
+# Un-comment once iris.csv sits in this folder (section 9):
+iris = load_iris("iris.csv")     # -> loaded 150 flowers
+
+# On the section 9 page you will then add, right here:
+#   distance_n / knn_n / accuracy_n   (your three functions, upgraded to
+#                                      take the feature count as an input)
+#   split_data(data, fraction, seed)  -> train: 120  test: 30
+# Expected: accuracy_n(iris_train, iris_test, 5, 4) is about 0.9667.
+
+def distance_n(row_a, row_b, num_features):
+    """Like distance, but for rows with any number of features.
+
+    Args:
+        row_a: A row whose first num_features items are numbers.
+        row_b: Another row in the same format.
+        num_features: How many leading columns are features.
+
+    Returns:
+        The straight-line distance across those features.
+    """
+    total = 0
+    for i in range(num_features):                 # HINT: not 2 any more, the feature count passed in
+        diff = row_a[i] - row_b[i]                        # HINT: feature i of row_a minus feature i of row_b (section 4)
+        total = total + diff**2              # HINT: the squared difference, added on
+    return math.sqrt(total)                            # HINT: the square root of the total
+
+def knn_n(training, query, k, num_features):
+    """Like knn_predict, but for rows with any number of features.
+
+    Args:
+        training: Rows of num_features numbers followed by a label.
+        query: The mystery row's features.
+        k: How many nearest neighbors get a vote.
+        num_features: How many leading columns are features.
+
+    Returns:
+        The label that wins the vote (labels live at row[num_features]).
+    """
+    scored = []
+    for row in training:
+        scored.append([distance_n(row, query, num_features), row[num_features]])   # HINT: the label. It sat at row[2] before; where is it now?
+    scored.sort()
+    nearest = []
+    for i in range(k):
+        nearest.append(scored[i][1])               # HINT: the label of the i-th closest pair (section 6)
+    best_label = nearest[0]
+    best_count = 0
+    for label in nearest:
+        c = nearest.count(label)                         # HINT: how many votes this label has, with .count()
+        if c > best_count:
+            best_count = c
+            best_label = label
+    return best_label
+
+def accuracy_n(training, test, k, num_features):
+    """Like accuracy, but for rows with any number of features.
+
+    Args:
+        training: The rows the model is allowed to learn from.
+        test: Labeled rows the model has never seen.
+        k: How many neighbors vote in each prediction.
+        num_features: How many leading columns are features.
+
+    Returns:
+        The fraction correct, between 0.0 and 1.0.
+    """
+    correct = 0
+    for row in test:
+        if knn_n(training, row, k, num_features) == row[num_features]:   # HINT: the flower's true label (same index idea as in knn_n)
+            correct = correct + 1
+    return correct/len(test)                            # HINT: the fraction correct
+
+def split_data(data, fraction, seed):
+    """Shuffles a dataset, then splits it into (training, test).
+
+    Args:
+        data: The full list of labeled rows.
+        fraction: The share that goes to training, like 0.8 for 80 percent.
+        seed: Any number; the same seed always gives the same shuffle.
+
+    Returns:
+        Two lists: the training rows, then the test rows.
+    """
+    shuffled = data[:]          # a copy, so we don't wreck the original
+    random.seed(seed)           # same seed = same shuffle, every run
+    random.shuffle(shuffled)
+    cut = int(len(shuffled) * fraction)
+    return shuffled[:cut], shuffled[cut:]
+
+iris_train, iris_test = split_data(iris, 0.8, 42)
+#print("train:", len(iris_train), " test:", len(iris_test))    # train: 120  test: 30
+#print("iris accuracy, K=5:", accuracy_n(iris_train, iris_test, 5, 4))
+
+for row in iris_test:
+    guess = knn_n(iris_train, row, 5, 4)    # HINT: iris_train, this row, 5 neighbors, 4 features
+    #print("true:", row[4], "| predicted:", guess, "| match:", guess == row[4])   # HINT: compare guess to row[4]
+
+sepal_train = []
+for row in iris_train:
+    sepal_train.append([row[0], row[1], row[4]])
+
+sepal_test = []
+for row in iris_test:
+    sepal_test.append([row[0], row[1], row[4]])
+
+#print(accuracy_n(sepal_train, sepal_test, 5, 2))
+
+# --- Section 10: when the data is biased ------------------------------
+# No new functions needed - section 10 reuses knn_predict and accuracy
+# on a deliberately skewed version of the fifteen-flower table.
+
+
+# ======================================================================
+# OPTIONAL: fast-finisher function stubs (the A ladder + B set)
+# ----------------------------------------------------------------------
+# The optional pages ask you to WRITE these functions yourself, from the
+# definitions on the page, with no fill-in-the-blank skeleton. The
+# signatures are here so you know exactly what to build. Delete the
+# `pass`, write the body, and only fill in the ones for pages you reach.
+# (Some need data or helpers you set up on that page, e.g. `reg`,
+# `ratings`, `iris`, `distance_n` - add those from the page first.)
+# ======================================================================
+
+# --- A.5, Part 3: precision and recall --------------------------------
+def precision_recall(pairs, species):
+    """Precision and recall for one species, from [true, predicted] pairs.
+
+    Returns (precision, recall). Count true positives, false positives,
+    and false negatives for `species`, then form the two ratios. Guard
+    the denominators so a species that never appears gives 0.0.
+    """
+    pass
+
+# --- B.1: KNN regression ----------------------------------------------
+def knn_regress(training, query, k, num_features):
+    """Predict a number: knn_n, but AVERAGE the k nearest neighbors'
+    numbers (at row[num_features]) instead of voting on labels."""
+    pass
+
+def mean_error(training, test, k, num_features):
+    """Mean absolute error: average size of the miss over the test set."""
+    pass
+
+# --- B.2: draw the decision map ---------------------------------------
+def draw_map(training, k):
+    """Sweep a grid of the petal space and print KNN's answer per cell.
+    Petal width high->low (rows), petal length low->high (cols)."""
+    pass
+
+# --- B.3: anomaly detection -------------------------------------------
+def strangeness(training, query, num_features):
+    """Smallest distance_n from the query to any training flower
+    (the 'best so far' scan, hunting a minimum)."""
+    pass
+
+# --- B.4: condensed nearest neighbors ---------------------------------
+def condense(training, num_features):
+    """Keep only the border flowers a 1-NN classifier needs (Hart 1968):
+    sweep, add every flower the store misclassifies, until a pass adds
+    nothing; return the store."""
+    pass
+
+# --- B.5: KNN recommender ---------------------------------------------
+def taste_distance(a, b):
+    """Distance between two people, ONLY on movies they have both rated
+    (skip any position where either rating is 0)."""
+    pass
+
+def nearest_people(ratings, me_name, k):
+    """The k people whose ratings are closest to me_name's."""
+    pass
+
+def recommend(ratings, me_name, k):
+    """For each movie I have not seen (0), average my k nearest people's
+    ratings; return the unseen movie with the highest predicted score."""
+    pass
+
+# --- B.6: KNN imputation ----------------------------------------------
+def impute_mass(penguins, k):
+    """Fill the one penguin whose body_mass is None by averaging the k
+    nearest COMPLETE penguins, compared on the first three features."""
+    pass
