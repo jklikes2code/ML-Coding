@@ -360,6 +360,42 @@ for row in iris_test:
 # No new functions needed - section 10 reuses knn_predict and accuracy
 # on a deliberately skewed version of the fifteen-flower table.
 
+# The fairest data set: 5 of each species
+fair_training = training
+
+#The skewed data set: setosa and virginica untouched, vertsicolor almost erased
+skewed_training = [
+    [1.4, 0.2, "setosa"],
+    [1.3, 0.2, "setosa"],
+    [1.5, 0.2, "setosa"],
+    [1.7, 0.4, "setosa"],
+    [1.4, 0.3, "setosa"],
+    [4.5, 1.5, "versicolor"], # only one versicolor left
+    [6.0, 2.5, "virginica"],
+    [5.8, 1.8, "virginica"],
+    [6.3, 1.8, "virginica"],
+    [5.5, 2.1, "virginica"],
+    [5.1, 1.9, "virginica"]
+]
+
+test_set = [
+    [1.5, 0.2, "setosa"],
+    [1.6, 0.3, "setosa"],
+    [4.2, 1.3, "versicolor"],
+    [4.4, 1.4, "versicolor"],
+    [4.6, 1.4, "versicolor"],
+    [6.1, 2.3, "virginica"],
+    [5.7, 2.0, "virginica"]
+]
+
+for row in test_set:
+    guess = knn_predict(fair_training, row, 3)
+    guess2 = knn_predict(skewed_training, row, 3)
+    print("true:", row[2], "| predicted:", guess, "| match:", guess == row[2])
+    print("true:", row[2], "| predicted:", guess2, "| match:", guess2 == row[2])
+print("fair accuracy:", accuracy(fair_training, test_set, 3))
+print("skewed accuracy:", accuracy(skewed_training, test_set, 3))
+print("skewed accuracy for versicolors only:", accuracy(skewed_training, test_set[2:5], 3))
 
 # ======================================================================
 # OPTIONAL: fast-finisher function stubs (the A ladder + B set)
