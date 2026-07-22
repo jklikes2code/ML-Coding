@@ -116,6 +116,14 @@ def accuracy(model, data):
             correct = correct + 1
     return correct / len(data)
 
+p = Perceptron(2)
+print("Before:", p.weights)
+
+p.train(beach_data, 10)
+print("After:", p.weights)
+
+print(accuracy(p, beach_data))  # should be 1.0 after training
+
 # --- The famous failure (from "7. The famous failure: XOR") ------------
 xor_data = [
     [0, 0, 0],
