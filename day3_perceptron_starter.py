@@ -71,7 +71,10 @@ class Perceptron:
         """
         # TODO (section 9): same as predict, but return the total
         # itself instead of turning it into a 1 or a 0.
-        pass
+        total = self.weights[0]  # start with the bias
+        for i in range(len(features)):
+            total += self.weights[i + 1] * features[i]
+        return total
 
     def train(self, data, epochs):
         """Teaches the perceptron by guessing and correcting.
@@ -116,13 +119,13 @@ def accuracy(model, data):
             correct = correct + 1
     return correct / len(data)
 
-p = Perceptron(2)
-print("Before:", p.weights)
+# p = Perceptron(2)
+# print("Before:", p.weights)
 
-p.train(beach_data, 10)
-print("After:", p.weights)
+# p.train(beach_data, 10)
+# print("After:", p.weights)
 
-print(accuracy(p, beach_data))  # should be 1.0 after training
+# print(accuracy(p, beach_data))  # should be 1.0 after training
 
 # --- The famous failure (from "7. The famous failure: XOR") ------------
 xor_data = [
@@ -133,10 +136,10 @@ xor_data = [
 ]
 
 #fails when using XOR (not linearly separable)
-p2 = Perceptron(2)
-p2.train(xor_data, 1)
-print("weights:", p2.weights)
-print("accuracy:", accuracy(p2, xor_data))
+# p2 = Perceptron(2)
+# p2.train(xor_data, 1)
+# print("weights:", p2.weights)
+# print("accuracy:", accuracy(p2, xor_data))
 
 # ======================================================================
 # TESTS - check your own work, no peeking at the solution needed.
@@ -155,8 +158,8 @@ def check(label, got, expected):
 # p = Perceptron(2)
 # check("init: three zero weights", p.weights, [0.0, 0.0, 0.0])
 
-# After predict:  set the beach weights by hand and check all four cases
-# against the arithmetic you did on pages 2-3.
+# # After predict:  set the beach weights by hand and check all four cases
+# # against the arithmetic you did on pages 2-3.
 # p = Perceptron(2)
 # p.weights = [-2.0, 1.0, 2.0]
 # check("predict sunny + warm", p.predict([1, 1]), 1)
@@ -165,10 +168,12 @@ def check(label, got, expected):
 # check("predict neither",      p.predict([0, 0]), 0)
 
 # After score:  same weighted sum as predict, but the raw number.
-# p = Perceptron(2)
-# p.weights = [-2.0, 1.0, 2.0]
-# check("score sunny + warm", p.score([1, 1]),  1.0)
-# check("score neither",      p.score([0, 0]), -2.0)
+p = Perceptron(2)
+p.weights = [-2.0, 1.0, 2.0]
+for features in [[1, 1], [1, 0], [0, 1], [0, 0]]:
+    print(features, "score", p.score(features), "-> predict", p.predict(features))
+check("score sunny + warm", p.score([1, 1]),  1.0)
+check("score neither",      p.score([0, 0]), -2.0)
 
 # After train:  a trained perceptron should get the beach rule perfectly.
 # (We check the behaviour, not specific weights - there is more than one
@@ -176,6 +181,10 @@ def check(label, got, expected):
 # p = Perceptron(2)
 # p.train(beach_data, 10)
 # check("train: perfect on beach_data", accuracy(p, beach_data), 1.0)
+
+# for row in beach_data:
+#     features = row[:-1]
+#     print(features, "-> predicted", p.predict(features), "correct", row[-1])
 
 # XOR (page 7): the famous failure. This one is SUPPOSED to get stuck.
 # p2 = Perceptron(2)
