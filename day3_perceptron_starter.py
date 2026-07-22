@@ -87,8 +87,17 @@ class Perceptron:
         # it into features and label, predict, and apply the update
         # rule you traced by hand on page 3 (bias first, then each
         # feature weight). The tests below check you got it right.
-        pass
+        for e in range(epochs):
+            for row in data:
+                features = row[:-1]
+                label = row[-1]
+                prediction = self.predict(features)
+                error = label - prediction
 
+                # nudge the bias, then each weight, with the update rule
+                self.weights[0] += self.learning_rate * error  # update bias
+                for i in range(len(features)):
+                    self.weights[i + 1] += self.learning_rate * error * features[i]  # update weights
 
 def accuracy(model, data):
     """Scores a model against labeled data (this one is provided).
