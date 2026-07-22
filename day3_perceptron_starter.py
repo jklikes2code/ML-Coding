@@ -132,6 +132,11 @@ xor_data = [
     [1, 1, 0]
 ]
 
+#fails when using XOR (not linearly separable)
+p2 = Perceptron(2)
+p2.train(xor_data, 1)
+print("weights:", p2.weights)
+print("accuracy:", accuracy(p2, xor_data))
 
 # ======================================================================
 # TESTS - check your own work, no peeking at the solution needed.
