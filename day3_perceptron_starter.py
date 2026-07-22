@@ -31,7 +31,10 @@ class Perceptron:
         # (the +1 makes room for the bias weight at the front).
         # Use 0.0 so they start as floats.
         # Also set self.learning_rate to 1.
-        pass
+        self.weights = []
+        for i in range(num_features + 1):
+            self.weights.append(0.0)
+        self.learning_rate = 1
 
     def predict(self, features):
         """Makes a yes/no decision for one example.
@@ -47,7 +50,13 @@ class Perceptron:
         # threshold to turn it into a 1 or a 0. Watch the off-by-one:
         # the bias sits at the front, so feature i's weight is not at
         # slot i. The tests below tell you if you got it right.
-        pass
+        total = self.weights[0]  # start with the bias
+        for i in range(len(features)):
+            total += self.weights[i + 1] * features[i]
+        if total > 0:
+            return 1
+        else:
+            return 0
 
     def score(self, features):
         """The raw weighted sum, before the threshold (section 9).
