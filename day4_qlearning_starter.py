@@ -178,6 +178,45 @@ for row in range(3):
         line += str(round(best_value(state), 1)) + "\t"
     print(line)
 
+def train_and_track(episodes, epsilon):
+    """Trains from scratch and returns a list of per-episode returns."""
+    global Q
+    Q = {}
+    for state in range(9):
+        Q[state] = {}
+        for a in actions:
+            Q[state][a] = 0.0
+
+    returns = []
+    for episode in range(episodes):
+        state = 0
+        done = False
+        total_reward = 0
+        while not done:
+            if random.random() < epsilon:
+                action = random.choice(actions)
+            else:
+                action = best_action(state)
+            new_state = step(state, action)
+            reward, done = result(new_state)
+            total_reward += reward
+
+            old = Q[state][action]
+            if done:
+                target = reward
+            else:
+                target = reward + discount * best_value(new_state)
+            Q[state][action] = old + learning_rate * (target - old)
+            state = new_state
+        returns.append(total_reward)
+    return returns
+
+random.seed(0)
+
+returns = train_and_track(2000, 0.1)
+print("first 15 returns:", returns[:15])
+print("last 15 returns:", returns[-15:])
+
 # --- Section 9: watch what it learned ------------------------------------
 # for state in range(9):
 #     print("cell", state, "->", best_action(state))
