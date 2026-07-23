@@ -217,16 +217,98 @@ def train_and_track(episodes, start_epsilon, decay=True):
         returns.append(total_reward)
     return returns
 
-random.seed(0)
-fixed = train_and_track(2000, 0.1)        #fixed epsilon = 0.1
-random.seed(0)
-decayed = train_and_track(2000, 0.3, decay=True)       #starts at 0.3, fades to 0
+# random.seed(0)
+# fixed = train_and_track(2000, 0.1)        #fixed epsilon = 0.1
+# random.seed(0)
+# decayed = train_and_track(2000, 0.3, decay=True)       #starts at 0.3, fades to 0
 
-print("first 100 fixed returns:", fixed[:100])
-print("first 100 decayed returns:", decayed[:100])
-#print("last 15 returns:", returns[-15:])
-print("fixed epsilon, last-100 average return:", sum(fixed[-100:]) / 100)
-print("decaying epsilon, last-100 average return:", sum(decayed[-100:]) / 100)
+# print("first 100 fixed returns:", fixed[:100])
+# print("first 100 decayed returns:", decayed[:100])
+# #print("last 15 returns:", returns[-15:])
+# print("fixed epsilon, last-100 average return:", sum(fixed[-100:]) / 100)
+# print("decaying epsilon, last-100 average return:", sum(decayed[-100:]) / 100)
+
+def run_gridworld(size, goal, trap, episodes):
+    """Trains a Q-learning agent on a size-by-size gridl returns its path."""
+    actions = ["up", "down", "left", "right"]
+    def step(state, aciton):
+        row = state // size
+        col = state % size
+        if aciton == "up" and row > 0:
+            row -= 1
+        elif action == "down" and row < size - 1:
+            row += 1
+        elif action == "left" and col > 0:
+            col -= 1
+        elif action == "right" and col < size - 1:
+            col += 1
+        return row * size + col
+    
+    def result(new_state):
+        if new_state == goal:
+            return 10, True
+        elif new_state == trap:
+            return -10, True
+        else:
+            return -1, False
+        
+    Q = {}
+    for state in range(size * size):
+        Q[state] = {}
+        for a in actions:
+            Q[state][a] = 0.0
+    
+    def best_value(state):
+        return max(Q[state][a] for a in actions) # a one-line shortcut for the whole scan
+    
+    def best_action(state):
+        best_a = "up"
+        best = Q[state]["up"]
+        for a in actions:
+            if Q[state][a] > best:
+                best = Q[state][a]
+                best_a = a
+        return best_a
+
+    learning_rate = 0.5
+    discount = 0.9
+    epsilon = 0.1
+    for episode in range(episodes):
+        state = 0
+        done = False
+        steps = 0
+        while not done and steps < 200:
+            if random.random() < epsilon:
+                action = random.choice(actions)
+            else:
+                action = best_action(state)
+
+            new_state = step(state, action)
+            reward, done = result(new_state)
+
+            old = Q[state][action]
+            if done:
+                target = reward
+            else:
+                target = reward + discount * best_value(new_state)
+            Q[state][action] = old + learning_rate * (target - old)
+            state = new_state
+            steps += 1
+    
+    # follow finished policy from the start corner
+    state = 0
+    path = [0]
+    done = False
+    steps = 0
+    while not done and steps < 200:
+        state = step(state, best_action(state))
+        reward, done = result(state)
+        path.append(state)
+        steps += 1
+    return path
+
+random.seed(0)
+print(run_gridworld(5, 24, 12, 5000))  # a 5x5 grid, goal=24, trap=12, 5000 episodes
 
 # --- Section 9: watch what it learned ------------------------------------
 # for state in range(9):
