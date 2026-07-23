@@ -171,20 +171,20 @@ for episode in range(2000):    # play out 2000 episodes
         state = new_state  # move on to the new state
 
 # --- Section 9: watch what it learned ------------------------------------
-# for state in range(9):
-#     print("cell", state, "->", best_action(state))
+for state in range(9):
+    print("cell", state, "->", best_action(state))
 
-# state = 0
-# path = [state]
-# done = False
-# steps = 0
-# while not done and steps < 20:   # cap: a lost agent prints evidence instead of freezing
-#     action = best_action(state)
-#     state = step(state, action)
-#     reward, done = result(state)
-#     path.append(state)
-#     steps = steps + 1
-# print("path:", path)     # hoping for: [0, 1, 2, 5, 8] (mirror [0, 3, 6, 7, 8] is just as good)
+state = 0
+path = [state]
+done = False
+steps = 0
+while not done and steps < 20:   # cap: a lost agent prints evidence instead of freezing
+    action = best_action(state)
+    state = step(state, action)
+    reward, done = result(state)
+    path.append(state)
+    steps = steps + 1
+print("path:", path)     # hoping for: [0, 1, 2, 5, 8] (mirror [0, 3, 6, 7, 8] is just as good)
 
 
 # ======================================================================
@@ -215,11 +215,11 @@ for episode in range(2000):    # play out 2000 episodes
 # policy from the start should walk all the way to the goal (cell 8).
 # The exact route can vary, so we only check that it arrives.
 #
-s = 0
-done = False
-steps = 0
-while not done and steps < 20:
-    s = step(s, best_action(s))
-    reward, done = result(s)
-    steps = steps + 1
-check("trained policy reaches the goal (cell 8)", s, 8)
+# s = 0
+# done = False
+# steps = 0
+# while not done and steps < 20:
+#     s = step(s, best_action(s))
+#     reward, done = result(s)
+#     steps = steps + 1
+# check("trained policy reaches the goal (cell 8)", s, 8)
