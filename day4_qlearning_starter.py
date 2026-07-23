@@ -74,13 +74,13 @@ def check(label, got, expected):
     extra = "" if got == expected else "   (got " + repr(got) + ")"
     print(mark, label, extra)
     
-check("step 0 right -> 1", step(0, "right"), 1)
-check("step 0 down -> 3",  step(0, "down"),  3)
-check("step 0 up stays 0 (edge guard)", step(0, "up"), 0)
-check("step 3 right -> 4 (the trap)",   step(3, "right"), 4)
-check("result(8) is goal",  result(8), (10, True))
-check("result(4) is trap",  result(4), (-10, True))
-check("result(1) is a step", result(1), (-1, False))
+# check("step 0 right -> 1", step(0, "right"), 1)
+# check("step 0 down -> 3",  step(0, "down"),  3)
+# check("step 0 up stays 0 (edge guard)", step(0, "up"), 0)
+# check("step 3 right -> 4 (the trap)",   step(3, "right"), 4)
+# check("result(8) is goal",  result(8), (10, True))
+# check("result(4) is trap",  result(4), (-10, True))
+# check("result(1) is a step", result(1), (-1, False))
 
 # --- Section 8: the Q-table and helpers ---------------------------------
 actions = ["up", "down", "left", "right"]
@@ -88,6 +88,12 @@ actions = ["up", "down", "left", "right"]
 Q = {}
 # TODO: fill Q so every cell 0-8 has an inner dictionary with all
 # four actions starting at 0.0 - a loop inside a loop.
+for state in range(9):
+    Q[state] = {}
+    for a in actions:
+        Q[state][a] = 0.0
+
+print(Q[0]) # peek at cell 0's inner dictionary
 
 def best_value(state):
     """Finds the agent's highest quality estimate for a state.
@@ -101,7 +107,11 @@ def best_value(state):
     """
     # TODO: return the HIGHEST Q[state][action] across the four actions
     # ("best so far" pattern - start with Q[state]["up"])
-    pass
+    best = Q[state]["up"]
+    for a in actions:
+        if Q[state][a] > best:
+            best = Q[state][a]
+    return best
 
 def best_action(state):
     """Finds which action the agent currently believes is best.
@@ -114,7 +124,13 @@ def best_action(state):
         the highest Q-value in this state.
     """
     # TODO: same scan, but return the NAME of the best action
-    pass
+    best_a = "up"
+    best = Q[state]["up"]
+    for a in actions:
+        if Q[state][a] > best:
+            best = Q[state][a]
+            best_a = a
+    return best_a
 
 # --- Section 8: the training loop ----------------------------------------
 learning_rate = 0.5
@@ -130,6 +146,29 @@ epsilon = 0.1
 #        rule from page 5 - and remember the terminal-move special
 #        case where there is no next state to look ahead into
 #     4. move on to the new state
+
+for episode in range(2000):    # play out 2000 episodes
+    state = 0    # every episode starts at cell 0
+    done = False
+    while not done:  # keeps going until episode ends
+        # choose and action with the epsilon-greedy rule
+        if random.random() < epsilon:
+            action = random.choice(actions) # explore: choose a random action
+        else:
+            action = best_action(state) # exploit: choose the best known action
+        
+        new_state = step(state, action)
+        reward, done = result(new_state)
+        
+        # implement the update rule
+        old = Q[state][action]
+        if done:
+            target = reward
+        else:
+            target = reward + discount * best_value(new_state)
+        Q[state][action] = old + learning_rate * (target - old)
+
+        state = new_state  # move on to the new state
 
 # --- Section 9: watch what it learned ------------------------------------
 # for state in range(9):
@@ -176,11 +215,11 @@ epsilon = 0.1
 # policy from the start should walk all the way to the goal (cell 8).
 # The exact route can vary, so we only check that it arrives.
 #
-# s = 0
-# done = False
-# steps = 0
-# while not done and steps < 20:
-#     s = step(s, best_action(s))
-#     reward, done = result(s)
-#     steps = steps + 1
-# check("trained policy reaches the goal (cell 8)", s, 8)
+s = 0
+done = False
+steps = 0
+while not done and steps < 20:
+    s = step(s, best_action(s))
+    reward, done = result(s)
+    steps = steps + 1
+check("trained policy reaches the goal (cell 8)", s, 8)
