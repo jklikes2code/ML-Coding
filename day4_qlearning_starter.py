@@ -178,7 +178,7 @@ for row in range(3):
         line += str(round(best_value(state), 1)) + "\t"
     print(line)
 
-def train_and_track(episodes, epsilon):
+def train_and_track(episodes, start_epsilon, decay=True):
     """Trains from scratch and returns a list of per-episode returns."""
     global Q
     Q = {}
@@ -189,6 +189,12 @@ def train_and_track(episodes, epsilon):
 
     returns = []
     for episode in range(episodes):
+         if decay:
+            #shrink from start_epsilon down toward 0 across the episodes
+            epsilon = start_epsilon * (1 - episode / episodes)
+        else:
+            epsilon = start_epsilon
+            
         state = 0
         done = False
         total_reward = 0
@@ -212,10 +218,15 @@ def train_and_track(episodes, epsilon):
     return returns
 
 random.seed(0)
+fixed = train_and_track(2000, 0.1)        #fixed epsilon = 0.1
+random.seed(0)
+decayed = train_and_track(2000, 0.3, decay=True)       #starts at 0.3, fades to 0
 
-returns = train_and_track(2000, 0.1)
-print("first 15 returns:", returns[:15])
-print("last 15 returns:", returns[-15:])
+print("first 100 fixed returns:", fixed[:100])
+print("first 100 decayed returns:", decayed[:100])
+#print("last 15 returns:", returns[-15:])
+print("fixed epsilon, last-100 average return:", sum(fixed[-100:]) / 100)
+print("decaying epsilon, last-100 average return:", sum(decayed[-100:]) / 100)
 
 # --- Section 9: watch what it learned ------------------------------------
 # for state in range(9):
