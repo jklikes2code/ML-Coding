@@ -1,3 +1,4 @@
+import random
 # class Counter:
 #     def __init__(self):
 #         self.count = 0   #the data this object remembers
@@ -75,23 +76,34 @@
 # print(menu["coffee"]["large"]) # prints 4
 # print(menu["tea"]) # prints the inner dictionary for tea, now including the new "medium" size
 
-ages = {"Sam": 25, "Alex": 30, "Jo": 22}
-print(ages["Sam"])  # prints 25
-ages["Jose"] = 28  # adds a new key-value pair
+# ages = {"Sam": 25, "Alex": 30, "Jo": 22}
+# print(ages["Sam"])  # prints 25
+# ages["Jose"] = 28  # adds a new key-value pair
 
-# checks to see if "Jo" is a valid key
-if "Jo" in ages:
-    print("Jo's age is", ages["Jo"])
+# # checks to see if "Jo" is a valid key
+# if "Jo" in ages:
+#     print("Jo's age is", ages["Jo"])
+# else:
+#     print("No age for Jo yet")
+
+# for name in ages:
+#     print(name, "is", ages[name], "years old")  # prints all keys and their respective values
+
+# classes = {
+#     "Math": {"teacher": "Mr. Smith", "room": 101},
+#     "Science": {"teacher": "Ms. Johnson", "room": 202},
+#     "Reading": {"teacher": "Mrs. Lee", "room": 303},
+#     "History": {"teacher": "Mr. Brown", "room": 404}    
+# }
+# print(classes["Math"]["teacher"])  # prints "Mr. Smith"
+
+# epsilon = 0.9 # when epsilon is high, the agent explores more often
+# actions = ["up", "down", "left", "right"]
+# state = 0
+
+if random.random() < epsilon:
+    action = random.choice(actions) # explore: choose a random action
 else:
-    print("No age for Jo yet")
+    action = "up" #exploit: later, the best known move
 
-for name in ages:
-    print(name, "is", ages[name], "years old")  # prints all keys and their respective values
-
-classes = {
-    "Math": {"teacher": "Mr. Smith", "room": 101},
-    "Science": {"teacher": "Ms. Johnson", "room": 202},
-    "Reading": {"teacher": "Mrs. Lee", "room": 303},
-    "History": {"teacher": "Mr. Brown", "room": 404}    
-}
-print(classes["Math"]["teacher"])  # prints "Mr. Smith"
+print("The agent chose to move", action, "this turn.")
