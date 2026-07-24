@@ -27,7 +27,7 @@ def step(state, action):
     # move stays on the grid (check the edges!). Finally rebuild the
     # single cell number from the row and column and return it.
     row = state // 3
-    col = state %3
+    col = state % 3
 
     if action == "up" and row > 0:
         row -= 1
@@ -38,7 +38,7 @@ def step(state, action):
     elif action == "right" and col < 2:
         col += 1
 
-    return row*3 + col
+    return row * 3 + col
 
 def result(new_state):
     """Judges a landing spot: what reward, and is the episode over?
@@ -93,7 +93,7 @@ for state in range(9):
     for a in actions:
         Q[state][a] = 0.0
 
-print(Q[0]) # peek at cell 0's inner dictionary
+#print(Q[0]) # peek at cell 0's inner dictionary
 
 def best_value(state):
     """Finds the agent's highest quality estimate for a state.
@@ -277,7 +277,7 @@ def run_gridworld(size, goal, trap, episodes):
         state = 0
         done = False
         steps = 0
-        while not done and steps < 200:
+        while not done and steps < 200:  #200 move safety cap, so a lost agent can't wander an episode forever
             if random.random() < epsilon:
                 action = random.choice(actions)
             else:
